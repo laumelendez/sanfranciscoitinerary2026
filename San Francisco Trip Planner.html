@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>San Francisco Trip Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <style>
+            width: 100%;
+            height: 500px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+
+        .leaflet-popup-content {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 0.9em;
+            color: #333;
+        }
+
+        .leaflet-popup-close-button {
+            color: #C9858B;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #C9858B 0%, #B8707A 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #D9989A 0%, #C9858B 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            overflow-x: auto;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-button:hover {
+            background: #e9ecef;
+            color: #C9858B;
+        }
+
+        .tab-button.active {
+            color: #C9858B;
+            border-bottom-color: #C9858B;
+            background: white;
+        }
+
+        .content {
+            padding: 40px 20px;
+            min-height: 600px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .rest-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .rest-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .rest-image {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #D9989A 0%, #C9858B 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5em;
+        }
+
+        .rest-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .rest-content {
+            padding: 15px;
+        }
+
+        .rest-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #C9858B;
+            margin-bottom: 8px;
+        }
+
+        .rest-name a {
+            color: #C9858B;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .rest-name a:hover {
+            text-decoration: underline;
+            color: #B8707A;
+        }
+
+        .rest-location {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+
+        .rest-price {
+            color: #C9858B;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .rest-rating {
+            color: #C9858B;
+            font-size: 0.9em;
+        }
+
+        .restaurant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .food-item {
+            background: white;
+            border-left: 4px solid #C9858B;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .food-item-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #C9858B;
+            margin-bottom: 5px;
+        }
+
+        .food-item-desc {
+            color: #555;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .day-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .day-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #C9858B;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #E8D0D0;
+        }
+
+        .activity-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .activity-timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #E8D0D0;
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '●';
+            position: absolute;
+            left: -36px;
+            color: #C9858B;
+            font-size: 1.2em;
+        }
+
+        .timeline-time {
+            color: #C9858B;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .timeline-desc {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #E8D0D0;
+            color: #C9858B;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin-right: 5px;
+            margin-top: 5px;
+        }
+
+        .transport-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .transport-table th {
+            background: #C9858B;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .transport-table td {
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .transport-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .info-box {
+            background: #E8D0D0;
+            border-left: 4px solid #C9858B;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            color: #8B5A5E;
+        }
+
+        @media (max-width: 768px) {
+            .restaurant-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌉 San Francisco Trip Planner</h1>
+            <p>Your Complete Guide to the City by the Bay</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('activities')">Activities & Itinerary</button>
+            <button class="tab-button" onclick="showTab('vegan')">Vegan Restaurants</button>
+            <button class="tab-button" onclick="showTab('nonvegan')">Non-Vegan Restaurants</button>
+            <button class="tab-button" onclick="showTab('snacks')">SF Snacks & Treats</button>
+            <button class="tab-button" onclick="showTab('activities2')">Interactive Map and More Activities</button>
+            <button class="tab-button" onclick="showTab('transport')">Transportation</button>
+        </div>
+
+        <div class="content">
+            <!-- Activities & Itinerary Tab -->
+            <div id="activities" class="tab-content active">
+                <h2 style="color: #C9858B; margin-bottom: 30px;">🗺️ Suggested Activities & Local Experiences</h2>
+                
+                <div class="day-section">
+                    <div class="day-title">Golden Gate Bridge & Presidio Tour</div>
+                    <div class="activity-timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-time">Morning (9:00 AM - 12:00 PM)</div>
+                            <div class="timeline-desc"><strong>Golden Gate Bridge Bike Tour</strong> - Ride across the iconic Golden Gate Bridge to Sausalito. Electric bikes available for challenging hills.</div>
+                            <div class="badge">$60-80 per person</div>
+                            <div class="badge" style="background: #e7f3ff; color: #0066cc;">4.8/5</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">Afternoon (1:00 PM - 4:00 PM)</div>
+                            <div class="timeline-desc"><strong>The Presidio</strong> - Explore this 1,500-acre park with hiking trails, scenic viewpoints, and historic sites. Free entry!</div>
+                            <div class="badge">Free</div>
+                            <div class="badge" style="background: #e7f3ff; color: #0066cc;">4.7/5</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">Evening (5:00 PM - 7:00 PM)</div>
+                            <div class="timeline-desc"><strong>Sunset Catamaran Cruise</strong> - Bay cruise with sunset views of the Golden Gate Bridge and Alcatraz Island.</div>
+                            <div class="badge">$39 per person</div>
+                            <div class="badge" style="background: #e7f3ff; color: #0066cc;">4.6/5</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="day-section">
+                    <div class="day-title">Alcatraz, Fisherman's Wharf & Pier 39</div>
+                    <div class="activity-timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-time">Morning (8:30 AM - 12:30 PM)</div>
+                            <div class="timeline-desc"><strong>Alcatraz Island Tour</strong> - Historic former prison with audio tour included. Book in advance!</div>
+                            <div class="badge">$41 per person</div>
+                            <div class="badge" style="background: #e7f3ff; color: #0066cc;">4.5/5</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">Afternoon (1:00 PM - 3:00 PM)</div>
+                            <div class="timeline-desc"><strong>Fisherman's Wharf</strong> - Watch cable cars, sea lions at Pier 39, visit Aquarium of the Bay.</div>
+                            <div class="badge">$28.75 (Aquarium)</div>
+                            <div class="badge" style="background: #e7f3ff; color: #0066cc;">4.4/5</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">Late Afternoon (3:30 PM - 5:30 PM)</div>
+                            <div class="timeline-desc"><strong>Skystar Ferris Wheel</strong> - 150ft tall with 360-degree views. Climate-controlled gondolas.</div>
+                            <div class="badge">$18-25</div>
+                            <div class="badge" style="background: #e7f3ff; color: #0066cc;">4.3/5</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="day-section">
+                    <div class="day-title">Golden Gate Park & Cultural Attractions</div>
+                    <div class="activity-timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-time">Morning (9:00 AM - 12:00 PM)</div>
+                            <div class="timeline-desc"><strong>Golden Gate Park Exploration</strong> - Larger than Central Park! Visit Japanese Tea Garden, botanical gardens, or California Academy of Sciences.</div>
+                            <div class="badge">Free entry / $34.95 (Academy)</div>
+                            <div class="badge" style="background: #e7f3ff; color: #0066cc;">4.8/5</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">Afternoon (1:00 PM - 3:30 PM)</div>
+                            <div class="timeline-desc"><strong>SFMOMA or Exploratorium</strong> - World-class art and science museums in downtown.</div>
+                            <div class="badge">$25-$39.95</div>
+                            <div class="badge" style="background: #e7f3ff; color: #0066cc;">4.6/5</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">Evening (5:00 PM - 7:00 PM)</div>
+                            <div class="timeline-desc"><strong>Mission District Walking Tour</strong> - Street art, murals, and trendy neighborhood vibes.</div>
+                            <div class="badge">Free / $20-35 (Guided)</div>
+                            <div class="badge" style="background: #e7f3ff; color: #0066cc;">4.7/5</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vegan Restaurants Tab -->
+            <div id="vegan" class="tab-content">
+                <h2 style="color: #C9858B; margin-bottom: 30px;">🌱 Best Vegan Restaurants in San Francisco</h2>
+                
+                <div style="max-width: 100%; margin: 0 auto;">
+                    <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                        <div style="padding: 0;">
+                            <div style="background: #C9858B; color: white; padding: 15px 20px; font-weight: bold; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: center;">
+                                <div>Restaurant</div>
+                                <div>Price</div>
+                                <div>Rating</div>
+                                <div>Address</div>
+                            </div>
+                            
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://nourish-cafe-hyde.square.site" target="_blank" style="color: #C9858B; text-decoration: none;">🥗 Nourish Cafe</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Whole foods, plant-based menu for breakfast & lunch. Great smoothie bowls and acai bowls.</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$12-18</div>
+                                <div style="color: #C9858B;">4.8/5</div>
+                                <div style="color: #666; font-size: 0.9em;">1030 Hyde St</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://www.nextlevelvg.com" target="_blank" style="color: #C9858B; text-decoration: none;">🍔 Next Level Burger</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Veganized fast food with creative burgers, crispy chick'n, golden tots & sweet potato fries.</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$14-16</div>
+                                <div style="color: #C9858B;">4.9/5</div>
+                                <div style="color: #666; font-size: 0.9em;">450 Rhode Island St</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://chisaisushiclub.com" target="_blank" style="color: #C9858B; text-decoration: none;">🍣 Chisai Sushi Club</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Vegan sushi omakase experience. Pricy but amazing creativity and flavors.</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$45-65</div>
+                                <div style="color: #C9858B;">4.9/5</div>
+                                <div style="color: #666; font-size: 0.9em;">3369 Mission St</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://enjoyveggie.com" target="_blank" style="color: #C9858B; text-decoration: none;">🥟 Enjoy Vegetarian Restaurant</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Family-run vegan Chinese. Steamed dumplings, veggie duck. No garlic, onion or MSG.</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$10-14</div>
+                                <div style="color: #C9858B;">4.7/5</div>
+                                <div style="color: #666; font-size: 0.9em;">839 Kearny St</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://goldeneravegan.com" target="_blank" style="color: #C9858B; text-decoration: none;">🍜 Golden Era Vegan</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Asian-inspired vegan cuisine. Flavorful dishes with creative mock meats.</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$11-16</div>
+                                <div style="color: #C9858B;">4.8/5</div>
+                                <div style="color: #666; font-size: 0.9em;">395 Golden Gate Ave</div>
+                            </div>
+
+                            <div style="padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://www.senorsisig.com" target="_blank" style="color: #C9858B; text-decoration: none;">🌯 Señor Sisig</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Vegan Filipino-Mexican fusion. Burritos, tacos, nachos with amazing flavors & heat.</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$10-12</div>
+                                <div style="color: #C9858B;">4.9/5</div>
+                                <div style="color: #666; font-size: 0.9em;">990 Valencia St</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Non-Vegan Restaurants Tab -->
+            <div id="nonvegan" class="tab-content">
+                <h2 style="color: #C9858B; margin-bottom: 30px;">🍖 Non-Vegan Restaurants & Seafood Specialties</h2>
+                
+                <div style="max-width: 100%; margin: 0 auto;">
+                    <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                        <div style="padding: 0;">
+                            <div style="background: #C9858B; color: white; padding: 15px 20px; font-weight: bold; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: center;">
+                                <div>Restaurant</div>
+                                <div>Price</div>
+                                <div>Rating</div>
+                                <div>Address</div>
+                            </div>
+                            
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://www.bajomarearestaurant.com" target="_blank" style="color: #C9858B; text-decoration: none;">🦞 Bajo Marea</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Fresh seafood with stunning bay views. Cioppino, Dungeness crab, oysters.</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$18-32</div>
+                                <div style="color: #C9858B;">4.8/5</div>
+                                <div style="color: #666; font-size: 0.9em;">Fisherman's Wharf</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://www.sottomaresf.com" target="_blank" style="color: #C9858B; text-decoration: none;">🦪 Sotto Mare</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Famous for cioppino (seafood stew). Local favorite since 1959.</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$20-28</div>
+                                <div style="color: #C9858B;">4.7/5</div>
+                                <div style="color: #666; font-size: 0.9em;">552 Green St</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://tadichwrench.com" target="_blank" style="color: #C9858B; text-decoration: none;">🐟 Tadich Grill</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Oldest restaurant in California (1849). Legendary crab louie & fresh seafood.</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$22-35</div>
+                                <div style="color: #C9858B;">4.8/5</div>
+                                <div style="color: #666; font-size: 0.9em;">240 California St</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://boudinbakery.com" target="_blank" style="color: #C9858B; text-decoration: none;">🥣 Boudin Bakery</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Famous clam chowder in sourdough bread bowl. SF institution since 1849.</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$12-16</div>
+                                <div style="color: #C9858B;">4.6/5</div>
+                                <div style="color: #666; font-size: 0.9em;">Fisherman's Wharf</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://slanteddoor.com" target="_blank" style="color: #C9858B; text-decoration: none;">🍲 The Slanted Door</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Modern Vietnamese. Beautiful bay views, fresh ingredients, excellent service.</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$18-32</div>
+                                <div style="color: #C9858B;">4.7/5</div>
+                                <div style="color: #666; font-size: 0.9em;">Ferry Building</div>
+                            </div>
+
+                            <div style="padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://www.innout.com" target="_blank" style="color: #C9858B; text-decoration: none;">🍟 In-N-Out Burger</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Famous California burger chain. Fresh, quality, affordable classic American.</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$8-12</div>
+                                <div style="color: #C9858B;">4.5/5</div>
+                                <div style="color: #666; font-size: 0.9em;">Multiple Locations</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SF Snacks & Treats Tab -->
+            <div id="snacks" class="tab-content">
+                <h2 style="color: #C9858B; margin-bottom: 30px;">🍪 Famous San Francisco Snacks & Treats</h2>
+                
+                <div style="max-width: 100%; margin: 0 auto;">
+                    <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                        <div style="padding: 0;">
+                            <div style="background: #C9858B; color: white; padding: 15px 20px; font-weight: bold; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: center;">
+                                <div>Snack/Treat</div>
+                                <div>Price</div>
+                                <div>Rating</div>
+                                <div>Location</div>
+                            </div>
+                            
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://tartinebakery.com" target="_blank" style="color: #C9858B; text-decoration: none;">🥐 Sourdough Bread (Tartine Bakery)</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Iconic SF bakery since 2002. Perfect artisan sourdough loaves.</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$5-8</div>
+                                <div style="color: #C9858B;">5/5</div>
+                                <div style="color: #666; font-size: 0.9em;">600 Guerrero St</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://boudinbakery.com" target="_blank" style="color: #C9858B; text-decoration: none;">🍜 Clam Chowder in Sourdough Bowl</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Classic SF institution since 1849. Creamy chowder in a bread bowl.</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$12-16</div>
+                                <div style="color: #C9858B;">5/5</div>
+                                <div style="color: #666; font-size: 0.9em;">Fisherman's Wharf</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://www.itsit.com" target="_blank" style="color: #C9858B; text-decoration: none;">🍦 It's-It Ice Cream</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Local favorite since 1928. Iconic vanilla ice cream between oatmeal cookies.</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$3-5</div>
+                                <div style="color: #C9858B;">5/5</div>
+                                <div style="color: #666; font-size: 0.9em;">Local Stores</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://www.ghirardelli.com" target="_blank" style="color: #C9858B; text-decoration: none;">🍫 Ghirardelli Hot Fudge Sundae</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Premium chocolate sundae with famous hot fudge sauce. Decadent treat!</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$8-12</div>
+                                <div style="color: #C9858B;">5/5</div>
+                                <div style="color: #666; font-size: 0.9em;">Ghirardelli Square</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://www.dandelionchocolate.com" target="_blank" style="color: #C9858B; text-decoration: none;">☕ Dandelion Gourmet Hot Chocolate</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Artisan hot chocolate made from single-origin chocolate. Pure comfort!</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$6-8</div>
+                                <div style="color: #C9858B;">5/5</div>
+                                <div style="color: #666; font-size: 0.9em;">740 Valencia St</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://www.searsfinefoods.com" target="_blank" style="color: #C9858B; text-decoration: none;">🥞 Swedish Pancakes (Sears Fine Food)</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Since 1938! Thin Swedish-style pancakes. A breakfast legend.</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$14-18</div>
+                                <div style="color: #C9858B;">5/5</div>
+                                <div style="color: #666; font-size: 0.9em;">439 Powell St</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://victoriacakery.com" target="_blank" style="color: #C9858B; text-decoration: none;">🍪 Italian Cannoli (Victoria Pastry Co.)</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Since 1915! Crispy shells filled with creamy ricotta. North Beach favorite!</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$4-6</div>
+                                <div style="color: #C9858B;">5/5</div>
+                                <div style="color: #666; font-size: 0.9em;">1200 Grant Ave</div>
+                            </div>
+
+                            <div style="padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;"><a href="https://www.liguria-bakery.com" target="_blank" style="color: #C9858B; text-decoration: none;">🍞 Focaccia (Liguria Bakery)</a></div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Family-owned since 1911. Authentic Ligurian focaccia with olive oil.</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$3-5</div>
+                                <div style="color: #C9858B;">5/5</div>
+                                <div style="color: #666; font-size: 0.9em;">1700 Stockton St</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Local Activities Tab -->
+            <div id="activities2" class="tab-content">
+                <h2 style="color: #C9858B; margin-bottom: 30px;">🎉 Interactive Map and More Activities</h2>
+                <div id="map" style="width: 100%; height: 500px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);"></div>
+                
+                <div style="max-width: 100%; margin: 0 auto;">
+                    <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                        <div style="padding: 0;">
+                            <div style="background: #C9858B; color: white; padding: 15px 20px; font-weight: bold; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: center;">
+                                <div>Activity</div>
+                                <div>Price</div>
+                                <div>Rating</div>
+                                <div>Location</div>
+                            </div>
+                            
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;">🚠 Cable Car Ride</div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Experience iconic SF cable cars climbing steep hills. Operating since 1873!</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$8</div>
+                                <div style="color: #C9858B;">5/5</div>
+                                <div style="color: #666; font-size: 0.9em;">Historic Transport</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;">🚴 Muir Woods Redwood Tour</div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Massive ancient redwoods in a misty forest. Breathtaking nature experience!</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$45-65</div>
+                                <div style="color: #C9858B;">5/5</div>
+                                <div style="color: #666; font-size: 0.9em;">12 miles north</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;">🏔️ Twin Peaks Hike</div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">360-degree views of SF. Easy 1.5-mile loop hike. Perfect for sunrise/sunset!</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">Free</div>
+                                <div style="color: #C9858B;">5/5</div>
+                                <div style="color: #666; font-size: 0.9em;">San Francisco</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;">🌊 Pier 39 Sea Lions</div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Watch playful sea lions lounging on the docks. Always entertaining!</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">Free</div>
+                                <div style="color: #C9858B;">5/5</div>
+                                <div style="color: #666; font-size: 0.9em;">Fisherman's Wharf</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;">🏞️ Alamo Square Park</div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Famous "Painted Ladies" Victorian houses with skyline backdrop. Iconic!</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">Free</div>
+                                <div style="color: #C9858B;">5/5</div>
+                                <div style="color: #666; font-size: 0.9em;">700 Fulton St</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;">🛍️ Ferry Building Marketplace</div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Gourmet food hall with local artisans. Bay views from patio!</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">Free / $10-30</div>
+                                <div style="color: #C9858B;">5/5</div>
+                                <div style="color: #666; font-size: 0.9em;">Embarcadero</div>
+                            </div>
+
+                            <div style="border-bottom: 1px solid #dee2e6; padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;">🎨 Mission District Street Art</div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">Vibrant murals and street art. Heart of SF's creative culture!</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">Free</div>
+                                <div style="color: #C9858B;">5/5</div>
+                                <div style="color: #666; font-size: 0.9em;">Valencia St</div>
+                            </div>
+
+                            <div style="padding: 15px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 15px; align-items: start;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: bold; color: #C9858B; margin-bottom: 5px;">🎭 Coit Tower & North Beach</div>
+                                    <p style="font-size: 0.9em; color: #555; margin: 0;">360-degree city views. Little Italy vibes. Historic charm!</p>
+                                </div>
+                                <div style="color: #C9858B; font-weight: bold;">$12</div>
+                                <div style="color: #C9858B;">5/5</div>
+                                <div style="color: #666; font-size: 0.9em;">Telegraph Hill</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transportation Tab -->
+            <div id="transport" class="tab-content">
+                <h2 style="color: #C9858B; margin-bottom: 30px;">🚇 San Francisco Public Transportation Guide</h2>
+                
+                <div class="info-box">
+                    <strong>💡 Pro Tip:</strong> Get a Clipper Card for best fares. Most convenient for visitors!
+                </div>
+
+                <h3 style="color: #C9858B; margin-top: 30px; margin-bottom: 15px;">MUNI (Buses, Light Rail, Cable Cars) - January 2025</h3>
+                <table class="transport-table">
+                    <thead>
+                        <tr>
+                            <th>Fare Type</th>
+                            <th>Price (Clipper)</th>
+                            <th>Valid For</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Single Ride</td>
+                            <td>$2.75</td>
+                            <td>120 minutes</td>
+                        </tr>
+                        <tr>
+                            <td>Cable Car Single</td>
+                            <td>$8.00</td>
+                            <td>One cable car ride</td>
+                        </tr>
+                        <tr>
+                            <td>Day Pass</td>
+                            <td>$5.50</td>
+                            <td>Unlimited (1 day)</td>
+                        </tr>
+                        <tr>
+                            <td>Monthly Pass</td>
+                            <td>$85-$102</td>
+                            <td>Unlimited (30 days)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3 style="color: #C9858B; margin-top: 30px; margin-bottom: 15px;">BART (Bay Area Rapid Transit)</h3>
+                <table class="transport-table">
+                    <thead>
+                        <tr>
+                            <th>Route</th>
+                            <th>Price</th>
+                            <th>Travel Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>SFO Airport to Downtown</td>
+                            <td>$11.15</td>
+                            <td>~30 minutes</td>
+                        </tr>
+                        <tr>
+                            <td>Within San Francisco</td>
+                            <td>$2.40-$5.00</td>
+                            <td>5-15 minutes</td>
+                        </tr>
+                        <tr>
+                            <td>To Oakland/East Bay</td>
+                            <td>$5-$10</td>
+                            <td>15-40 minutes</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="info-box" style="margin-top: 30px;">
+                    <strong>3-Day Budget:</strong> 3x Day Passes ($5.50 each = $16.50) for unlimited bus/light rail rides + BART from airport = ~$63.30 total!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let map = null;
+
+        function initMap() {
+            if (map) return;
+            
+            map = L.map('map').setView([37.7749, -122.4194], 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            const locations = [
+                // Vegan Restaurants
+                { name: 'Nourish Cafe', lat: 37.7878, lng: -122.4217, type: 'Vegan', emoji: '🥗' },
+                { name: 'Next Level Burger', lat: 37.7539, lng: -122.4004, type: 'Vegan', emoji: '🍔' },
+                { name: 'Chisai Sushi Club', lat: 37.7449, lng: -122.4158, type: 'Vegan', emoji: '🍣' },
+                { name: 'Enjoy Vegetarian', lat: 37.7969, lng: -122.4075, type: 'Vegan', emoji: '🥟' },
+                { name: 'Golden Era Vegan', lat: 37.7814, lng: -122.4161, type: 'Vegan', emoji: '🍜' },
+                { name: 'Señor Sisig', lat: 37.7599, lng: -122.4148, type: 'Vegan', emoji: '🌯' },
+                
+                // Non-Vegan Restaurants
+                { name: 'Bajo Marea', lat: 37.8086, lng: -122.4119, type: 'Seafood', emoji: '🦞' },
+                { name: 'Sotto Mare', lat: 37.8004, lng: -122.4090, type: 'Seafood', emoji: '🦪' },
+                { name: 'Tadich Grill', lat: 37.7906, lng: -122.4017, type: 'Seafood', emoji: '🐟' },
+                { name: 'Boudin Bakery', lat: 37.8086, lng: -122.4119, type: 'Bakery', emoji: '🥣' },
+                { name: 'The Slanted Door', lat: 37.8020, lng: -122.3916, type: 'Vietnamese', emoji: '🍲' },
+                { name: 'In-N-Out Burger', lat: 37.7749, lng: -122.4194, type: 'Burger', emoji: '🍟' },
+                
+                // Snacks & Treats
+                { name: 'Tartine Bakery', lat: 37.7599, lng: -122.4246, type: 'Snack', emoji: '🥐' },
+                { name: 'Ghirardelli Square', lat: 37.8025, lng: -122.4223, type: 'Snack', emoji: '🍫' },
+                { name: 'Dandelion Chocolate', lat: 37.7599, lng: -122.4148, type: 'Snack', emoji: '☕' },
+                { name: 'Sears Fine Food', lat: 37.7879, lng: -122.4085, type: 'Snack', emoji: '🥞' },
+                { name: 'Victoria Pastry Co.', lat: 37.8009, lng: -122.4078, type: 'Snack', emoji: '🍪' },
+                { name: 'Liguria Bakery', lat: 37.8005, lng: -122.4085, type: 'Snack', emoji: '🍞' },
+                
+                // Activities
+                { name: 'Cable Car Ride', lat: 37.7952, lng: -122.4091, type: 'Activity', emoji: '🚠' },
+                { name: 'Muir Woods', lat: 37.8949, lng: -122.5948, type: 'Activity', emoji: '🚴' },
+                { name: 'Twin Peaks', lat: 37.7522, lng: -122.4458, type: 'Activity', emoji: '🏔️' },
+                { name: 'Pier 39 Sea Lions', lat: 37.8086, lng: -122.4119, type: 'Activity', emoji: '🌊' },
+                { name: 'Alamo Square Park', lat: 37.7759, lng: -122.4355, type: 'Activity', emoji: '🏞️' },
+                { name: 'Ferry Building', lat: 37.8020, lng: -122.3916, type: 'Activity', emoji: '🛍️' },
+                { name: 'Mission District Street Art', lat: 37.7599, lng: -122.4148, type: 'Activity', emoji: '🎨' },
+                { name: 'Coit Tower', lat: 37.8026, lng: -122.4105, type: 'Activity', emoji: '🎭' }
+            ];
+
+            const colors = {
+                'Vegan': '#2ecc71',
+                'Seafood': '#3498db',
+                'Bakery': '#e67e22',
+                'Vietnamese': '#9b59b6',
+                'Burger': '#e74c3c',
+                'Snack': '#f39c12',
+                'Activity': '#1abc9c'
+            };
+
+            locations.forEach(loc => {
+                const color = colors[loc.type] || '#95a5a6';
+                const markerHtml = `<div style="background-color: ${color}; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${loc.emoji}</div>`;
+                
+                const customIcon = L.divIcon({
+                    html: markerHtml,
+                    iconSize: [30, 30],
+                    className: 'custom-marker'
+                });
+
+                const marker = L.marker([loc.lat, loc.lng], { icon: customIcon }).addTo(map);
+                marker.bindPopup(`<strong style="color: #C9858B;">${loc.emoji} ${loc.name}</strong><br><span style="color: #666;">${loc.type}</span>`);
+            });
+        }
+
+        function showTab(tabName) {
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'activities2') {
+                setTimeout(() => initMap(), 100);
+            }
+        }
+    </script>
+</body>
+</html>
